@@ -123,7 +123,7 @@ def twitter_auth():
 def twitter_auth_callback():
     """
     認証のコールバックでのリダイレクトを処理する
-    認証が正常に完了した場合はアクセストークンが取得できる
+    認証が正常に完了した場合はアクセストークンが取得できるので、トークンを利用して認証されたユーザーの情報を取得する
     """
     session["callback_args"] = request.args
 
