@@ -18,3 +18,10 @@
 {% else %}
   <p>not authenticated</p>
 {% endif %}
+
+<h2>callback args</h2>
+{% if callback_args %}
+  <pre>{{ callback_args }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
