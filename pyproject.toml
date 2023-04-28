@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "twitter-oauth2-example"
+version = "0.1.0"
+description = ""
+authors = ["Chanmoro <kazuki.m777@gmail.com>"]
+readme = "README.md"
+packages = [{include = "twitter_oauth2_example"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.3.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
