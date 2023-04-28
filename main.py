@@ -90,22 +90,16 @@ def index():
     """
     セッションに認証したユーザー情報、アクセストークンがある場合は内容を表示する
     """
+    callback_args = session.get("callback_args")
     user_info = session.get("user_info")
     oauth2_access_token = session.get("oauth2_access_token")
 
     # datetime オブジェクトの json ダンプを簡単にするために orjson を利用
     return render_template(
         "index.html",
-        user_info=orjson.dumps(
-            user_info, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2
-        ).decode()
-        if user_info
-        else None,  # noqa
-        oauth2_access_token=orjson.dumps(
-            oauth2_access_token, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2
-        ).decode()
-        if oauth2_access_token
-        else None,  # noqa
+        callback_args=orjson.dumps(callback_args, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2).decode() if callback_args else None,  # noqa
+        user_info=orjson.dumps(user_info, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2).decode() if user_info else None,  # noqa
+        oauth2_access_token=orjson.dumps(oauth2_access_token, option=orjson.OPT_APPEND_NEWLINE | orjson.OPT_INDENT_2).decode() if oauth2_access_token else None,  # noqa
     )
 
 
@@ -131,7 +125,13 @@ def twitter_auth_callback():
     認証のコールバックでのリダイレクトを処理する
     認証が正常に完了した場合はアクセストークンが取得できる
     """
+    session["callback_args"] = request.args
+
     code = request.args.get("code")
+    # 認証エラーがある場合はクエリパラメータに error がセットされる
+    error = request.args.get("error")
+    if error:
+        return redirect(url_for("index"))
 
     oauth2_session = create_oauth2_session(session["oauth_state"])
     oauth2_access_token = oauth2_session.fetch_token(
