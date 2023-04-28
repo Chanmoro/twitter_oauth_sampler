@@ -1,0 +1,20 @@
+<!doctype html>
+<title>twitter oauth2 sampler</title>
+
+<h1>twitter oauth2 sampler</h1>
+
+<a href="{{ url_for('twitter_auth') }}">twitter Login!</a>
+
+<h2>authenticated user info</h2>
+{% if user_info %}
+  <pre>{{ user_info }}</pre>
+{% else %}
+  <p>not authenticated</p>
+{% endif %}
+
+<h2>oauth2 access token</h2>
+{% if oauth2_access_token %}
+  <pre>{{ oauth2_access_token }}</pre>
+{% else %}
+  <p>not authenticated</p>
+{% endif %}
