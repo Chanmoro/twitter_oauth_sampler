@@ -20,7 +20,7 @@ def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     """
     twitter API v2 を利用して token に紐づく twitter アカウントの情報を取得する
     """
-    oauth = OAuth1(
+    oauth1 = OAuth1(
         TWITTER_CONSUMER_KEYS_API_KEY,
         TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
         access_token,
@@ -28,7 +28,7 @@ def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     )
     res = requests.get(
         "https://api.twitter.com/2/users/me",
-        auth=oauth,
+        auth=oauth1,
         params={
             "user.fields": ",".join(
                 [
