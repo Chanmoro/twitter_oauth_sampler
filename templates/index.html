@@ -3,25 +3,6 @@
 
 <h1>twitter oauth sampler</h1>
 
-<a href="{{ url_for('twitter_auth') }}">twitter Login!</a>
-
-<h2>authenticated user info</h2>
-{% if user_info %}
-  <pre>{{ user_info }}</pre>
-{% else %}
-  <p>not authenticated</p>
-{% endif %}
-
-<h2>oauth2 access token</h2>
-{% if oauth2_access_token %}
-  <pre>{{ oauth2_access_token }}</pre>
-{% else %}
-  <p>not authenticated</p>
-{% endif %}
-
-<h2>callback args</h2>
-{% if callback_args %}
-  <pre>{{ callback_args }}</pre>
-{% else %}
-  <p>no data</p>
-{% endif %}
+<div style="display: flex;">
+    <a href="{{ url_for('oauth2_0.index') }}" style="margin-right: 10px;">OAuth1.0a</a>
+</div>
