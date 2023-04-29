@@ -1,0 +1,52 @@
+<!doctype html>
+<title>twitter oauth sampler</title>
+
+<h1>twitter oauth sampler</h1>
+<h2>OAuth 1.0a User Context</h2>
+
+
+<a href="{{ url_for('oauth1_0a.twitter_auth') }}">Authorize Twitter</a>
+
+<h2>Authorized user</h2>
+{% if authorized_user %}
+  <h3>response status code</h3>
+  <pre>{{ response_status }}</pre>
+  <h3>response body</h3>
+  <pre>{{ authorized_user }}</pre>
+  <h3>response header</h3>
+  <pre>{{ response_header }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
+
+
+<h2>Oauth1.0a authorization</h2>
+<h3>Access token</h3>
+{% if oauth1_access_token %}
+<h4>access token</h4>
+  <pre>{{ oauth1_access_token }}</pre>
+<h4>access token secret</h4>
+  <pre>{{ oauth1_access_token_secret }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
+
+<h3>Oauth session</h3>
+{% if oauth1_oauth_token %}
+<h4>oauth token</h4>
+  <pre>{{ oauth1_oauth_token }}</pre>
+<h4>oauth token secret</h4>
+  <pre>{{ oauth1_oauth_token_secret }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
+
+
+<h3>Callback parameters</h3>
+{% if callback_args %}
+  <pre>{{ callback_args }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
+
+
