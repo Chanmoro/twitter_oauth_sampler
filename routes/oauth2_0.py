@@ -12,8 +12,8 @@ from requests_oauthlib import OAuth2, OAuth2Session
 oauth2_0_blueprint = Blueprint("oauth2_0", __name__, template_folder="templates")
 
 
-TWITTER_APP_CLIENT_ID = os.getenv("TWITTER_APP_CLIENT_ID")
-TWITTER_APP_CLIENT_SECRET = os.getenv("TWITTER_APP_CLIENT_SECRET")
+TWITTER_OAUTH2_CLIENT_ID = os.getenv("TWITTER_OAUTH2_CLIENT_ID")
+TWITTER_OAUTH2_CLIENT_SECRET = os.getenv("TWITTER_OAUTH2_CLIENT_SECRET")
 
 
 @oauth2_0_blueprint.route("/")
@@ -60,7 +60,7 @@ def create_oauth2_session(state: str | None = None) -> OAuth2Session:
     https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
     """
     return OAuth2Session(
-        TWITTER_APP_CLIENT_ID,
+        TWITTER_OAUTH2_CLIENT_ID,
         redirect_uri="http://127.0.0.1:8000/oauth2_0/twitter_auth/callback",
         scope=["tweet.read", "users.read", "offline.access"],
         state=state,
@@ -145,7 +145,7 @@ def twitter_auth_callback():
     oauth2_session = create_oauth2_session(session["oauth2_state"])
     oauth2_access_token = oauth2_session.fetch_token(
         token_url="https://api.twitter.com/2/oauth2/token",
-        client_secret=TWITTER_APP_CLIENT_SECRET,
+        client_secret=TWITTER_OAUTH2_CLIENT_SECRET,
         code_verifier=session["oauth2_code_verifier"],
         code=code,
     )
