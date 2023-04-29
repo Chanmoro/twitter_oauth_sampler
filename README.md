@@ -1,8 +1,8 @@
-# twitter_oauth_sampler
+# twitter oauth sampler
 
 This is a demo application for Twitter API v2 using access tokens obtained through both OAuth1.0a user context and OAuth 2.0 with PKCE.
 
-## Environment Setup
+## Setup
 
 - Set environment variables on your local machine. Each values can be obtained from [Twitter developer portal](https://developer.twitter.com/en/portal/products).
   - TWITTER_OAUTH2_CLIENT_ID
