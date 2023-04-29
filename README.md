@@ -4,7 +4,7 @@ This is a demo application for Twitter API v2 using access tokens obtained throu
 
 ## Environment Setup
 
-- Set environment variables on your local machine. Each values can be obtained from twitter developer portal.
+- Set environment variables on your local machine. Each values can be obtained from [Twitter developer portal](https://developer.twitter.com/en/portal/products).
   - TWITTER_OAUTH2_CLIENT_ID
     - OAuth 2.0 Client ID value
   - TWITTER_OAUTH2_CLIENT_SECRET
@@ -22,7 +22,7 @@ This is a demo application for Twitter API v2 using access tokens obtained throu
 
 ## Screen shots
 
-Click `Authorize Twitter` link to initiate twitter authorization.  
+Click `Authorize Twitter` link to initiate Twitter authorization.  
 If the authorization is successful, authorized user and access token will be displayed on the screen.
 
 ### OAuth1.0a
