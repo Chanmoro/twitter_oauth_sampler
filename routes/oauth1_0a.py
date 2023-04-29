@@ -12,9 +12,6 @@ oauth1_0a_blueprint = Blueprint("oauth1_0a", __name__, template_folder="template
 TWITTER_CONSUMER_KEYS_API_KEY = os.getenv("TWITTER_CONSUMER_KEYS_API_KEY")
 TWITTER_CONSUMER_KEYS_API_KEY_SECRET = os.getenv("TWITTER_CONSUMER_KEYS_API_KEY_SECRET")
 
-TWITTER_AUTH_URL = "https://twitter.com/i/oauth2/authorize"
-TWITTER_TOKEN_URL = "https://api.twitter.com/2/oauth2/token"
-
 
 def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     """
