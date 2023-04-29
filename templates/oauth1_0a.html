@@ -2,8 +2,14 @@
 <title>twitter oauth sampler</title>
 
 <h1>twitter oauth sampler</h1>
-<h2>OAuth 1.0a User Context</h2>
 
+<div style="display: flex;">
+    <div style="margin-right: 10px;">OAuth 1.0a</div>
+    <a href="{{ url_for('oauth2_0.index') }}" style="margin-right: 10px;">OAuth 2.0</a>
+</div>
+
+
+<h2>OAuth 1.0a User Context</h2>
 
 <a href="{{ url_for('oauth1_0a.twitter_auth') }}">Authorize Twitter</a>
 
