@@ -1,6 +1,6 @@
-# twitter_oauth2_sampler
+# twitter_oauth_sampler
 
-Twitter OAuth 2.0 authentication sampler.
+Twitter OAuth authentication sampler.
 
 ## Environment Setup
 

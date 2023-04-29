@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "twitter-oauth2-example"
+name = "twitter-oauth-sampler"
 version = "0.1.0"
 description = ""
 authors = ["Chanmoro <kazuki.m777@gmail.com>"]
