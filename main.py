@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, redirect, url_for
 
 from routes import oauth2_0_blueprint, oauth1_0a_blueprint
 
@@ -11,4 +11,4 @@ app.register_blueprint(oauth2_0_blueprint, url_prefix="/oauth2_0")
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return redirect(url_for("oauth1_0a.index"))
