@@ -8,11 +8,21 @@
     <div style="margin-right: 10px;">OAuth 2.0</div>
 </div>
 
-
 <h2>OAuth 2.0 Authorization Code with PKCE</h2>
 
-
 <a href="{{ url_for('oauth2_0.twitter_auth') }}">Authorize Twitter</a>
+
+<h2>Authorized user</h2>
+{% if authorized_user %}
+  <h3>response status code</h3>
+  <pre>{{ response_status }}</pre>
+  <h3>response body</h3>
+  <pre>{{ authorized_user }}</pre>
+  <h3>response header</h3>
+  <pre>{{ response_header }}</pre>
+{% else %}
+  <p>no data</p>
+{% endif %}
 
 <h2>Oauth2 authorization</h2>
 <h3>Access token</h3>
@@ -22,7 +32,7 @@
   <p>no data</p>
 {% endif %}
 
-<h3>Session</h3>
+<h3>Oauth session</h3>
 {% if oauth2_code_verifier %}
 <h4>code verifier</h4>
   <pre>{{ oauth2_code_verifier }}</pre>
@@ -32,19 +42,9 @@
   <p>no data</p>
 {% endif %}
 
-
 <h3>Callback parameters</h3>
 {% if callback_args %}
   <pre>{{ callback_args }}</pre>
 {% else %}
   <p>no data</p>
 {% endif %}
-
-<h2>Authorized user</h2>
-{% if authorized_user %}
-  <pre>{{ authorized_user }}</pre>
-{% else %}
-  <p>no data</p>
-{% endif %}
-
-
