@@ -16,27 +16,6 @@ TWITTER_OAUTH2_CLIENT_ID = os.getenv("TWITTER_OAUTH2_CLIENT_ID")
 TWITTER_OAUTH2_CLIENT_SECRET = os.getenv("TWITTER_OAUTH2_CLIENT_SECRET")
 
 
-@oauth2_0_blueprint.route("/")
-def index():
-    """
-    セッションに認証したユーザー情報、アクセストークンがある場合は内容を表示する
-    """
-    authorized_user_response = session.get("oauth2_authorized_user_response", {})
-
-    return render_template(
-        "oauth2_0.html",
-        oauth2_access_token=json.dumps(session.get("oauth2_access_token"), indent=2),
-        callback_args=json.dumps(session.get("oauth2_callback_args"), indent=2),
-        oauth2_code_verifier=session.get("oauth2_code_verifier"),
-        oauth2_state=session.get("oauth2_state"),
-        authorized_user=json.dumps(
-            authorized_user_response.get("body"), indent=2, ensure_ascii=False
-        ),
-        response_status=authorized_user_response.get("status_code"),
-        response_header=authorized_user_response.get("headers"),
-    )
-
-
 def generate_pkce_code() -> tuple[str, str]:
     """
     Oauth2 PKCE 認証で使う code_verifier,  code_challenge を生成する
@@ -65,26 +44,6 @@ def create_oauth2_session(state: str | None = None) -> OAuth2Session:
         scope=["tweet.read", "users.read", "offline.access"],
         state=state,
     )
-
-
-@oauth2_0_blueprint.route("/twitter_auth")
-def twitter_auth():
-    """
-    twitter の認可の URL を取得してリダイレクトする
-    """
-    session.clear()
-
-    oauth2_session = create_oauth2_session()
-    code_verifier, code_challenge = generate_pkce_code()
-    authorization_url, state = oauth2_session.authorization_url(
-        "https://twitter.com/i/oauth2/authorize",
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
-    )
-
-    session["oauth2_code_verifier"] = code_verifier
-    session["oauth2_state"] = state
-    return redirect(authorization_url)
 
 
 def get_authorized_user(access_token: dict) -> dict:
@@ -127,6 +86,47 @@ def get_authorized_user(access_token: dict) -> dict:
         "headers": "\n".join([f"{k}: {v}" for k, v in res.headers.items()]),
         "body": res.json(),
     }
+
+
+@oauth2_0_blueprint.route("/")
+def index():
+    """
+    セッションに認証したユーザー情報、アクセストークンがある場合は内容を表示する
+    """
+    authorized_user_response = session.get("oauth2_authorized_user_response", {})
+
+    return render_template(
+        "oauth2_0.html",
+        oauth2_access_token=json.dumps(session.get("oauth2_access_token"), indent=2),
+        callback_args=json.dumps(session.get("oauth2_callback_args"), indent=2),
+        oauth2_code_verifier=session.get("oauth2_code_verifier"),
+        oauth2_state=session.get("oauth2_state"),
+        authorized_user=json.dumps(
+            authorized_user_response.get("body"), indent=2, ensure_ascii=False
+        ),
+        response_status=authorized_user_response.get("status_code"),
+        response_header=authorized_user_response.get("headers"),
+    )
+
+
+@oauth2_0_blueprint.route("/twitter_auth")
+def twitter_auth():
+    """
+    twitter の認可の URL を取得してリダイレクトする
+    """
+    session.clear()
+
+    oauth2_session = create_oauth2_session()
+    code_verifier, code_challenge = generate_pkce_code()
+    authorization_url, state = oauth2_session.authorization_url(
+        "https://twitter.com/i/oauth2/authorize",
+        code_challenge=code_challenge,
+        code_challenge_method="S256",
+    )
+
+    session["oauth2_code_verifier"] = code_verifier
+    session["oauth2_state"] = state
+    return redirect(authorization_url)
 
 
 @oauth2_0_blueprint.route("/twitter_auth/callback")
