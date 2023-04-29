@@ -1,14 +1,18 @@
 # twitter_oauth_sampler
 
-Twitter OAuth authentication sampler.
+This is a demo application for Twitter API v2 using access tokens obtained through both OAuth1.0a user context and OAuth 2.0 with PKCE.
 
 ## Environment Setup
 
-- Set environment variables on your local machine
-  - TWITTER_APP_CLIENT_ID
-    - Set OAuth 2.0 Client ID value created in the twitter developer portal.
-  - TWITTER_APP_CLIENT_SECRET
-    - Set OAuth 2.0 Client Secret value created in the twitter developer portal.
+- Set environment variables on your local machine. Each values can be obtained from twitter developer portal.
+  - TWITTER_OAUTH2_CLIENT_ID
+    - OAuth 2.0 Client ID value
+  - TWITTER_OAUTH2_CLIENT_SECRET
+    - OAuth 2.0 Client Secret value
+  - TWITTER_CONSUMER_KEYS_API_KEY
+    - API key in the "Consumer Keys" section
+  - TWITTER_CONSUMER_KEYS_API_KEY_SECRET
+    - API key secret in the "Consumer Keys" section
 
 ## Run application
 
@@ -18,11 +22,11 @@ Twitter OAuth authentication sampler.
 
 ## Screen shots
 
-- Click `twitter Login!` link to initiate twitter authentication.
-![auth_error](https://raw.githubusercontent.com/Chanmoro/twitter_oauth2_sampler/main/docs/initial.png)
+Click `Authorize Twitter` link to initiate twitter authorization.  
+If the authorization is successful, authorized user and access token will be displayed on the screen.
 
-- If authentication is successful, authenticated user information and access token are displayed.
-![auth_error](https://raw.githubusercontent.com/Chanmoro/twitter_oauth2_sampler/main/docs/auth_success.png)
+### OAuth1.0a
+![oauth1](https://github.com/Chanmoro/twitter_oauth_sampler/raw/main/docs/oauth1.png)
 
-- If authentication encounters an error, contents of parameters passed to callback are displayed.
-![auth_error](https://raw.githubusercontent.com/Chanmoro/twitter_oauth2_sampler/main/docs/auth_error.png)
+### OAuth 2.0 with PKCE
+![oauth2](https://github.com/Chanmoro/twitter_oauth_sampler/raw/main/docs/oauth2.png)
