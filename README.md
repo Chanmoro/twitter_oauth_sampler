@@ -18,7 +18,7 @@ This is a demo application for Twitter API v2 using access tokens obtained throu
 
 1. Start application
   - `$ docker-compose up`
-2. Access to `http://127.0.0.1:8000/`
+2. Access to `http://localhost:8000/`
 
 ## Screen shots
 

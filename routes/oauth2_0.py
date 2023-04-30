@@ -21,7 +21,7 @@ def create_oauth2_session(state: str | None = None) -> OAuth2Session:
     # https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
     return OAuth2Session(
         TWITTER_OAUTH2_CLIENT_ID,
-        redirect_uri="http://127.0.0.1:8000/oauth2_0/twitter_auth/callback",
+        redirect_uri="http://localhost:8000/oauth2_0/twitter_auth/callback",
         scope=["tweet.read", "users.read", "offline.access"],
         state=state,
     )

@@ -59,7 +59,7 @@ def create_oauth1_user_handler() -> tweepy.OAuth1UserHandler:
     return tweepy.OAuth1UserHandler(
         consumer_key=TWITTER_CONSUMER_KEYS_API_KEY,
         consumer_secret=TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
-        callback="http://127.0.0.1:8000/oauth1_0a/twitter_auth/callback",
+        callback="http://localhost:8000/oauth1_0a/twitter_auth/callback",
     )
 
 
