@@ -25,6 +25,12 @@
 {% endif %}
 
 <h2>Oauth2 authorization</h2>
+{% if oauth2_error %}
+  <h3>Error</h3>
+  <pre>{{ oauth2_error }}</pre>
+{% endif %}
+
+
 <h3>Access token</h3>
 {% if oauth2_access_token %}
   <pre>{{ oauth2_access_token }}</pre>

@@ -2,7 +2,8 @@ import json
 import os
 
 import requests
-from flask import Blueprint, render_template, redirect, session, request, url_for
+from flask import Blueprint, render_template, redirect, session, request, url_for, current_app
+from oauthlib.oauth2 import OAuth2Error
 from requests_oauthlib import OAuth2, OAuth2Session
 
 oauth2_0_blueprint = Blueprint("oauth2_0", __name__, template_folder="templates")
@@ -95,6 +96,7 @@ def index():
 
     return render_template(
         "oauth2_0.html",
+        oauth2_error=session.get("oauth2_error"),
         oauth2_access_token=json.dumps(session.get("oauth2_access_token"), indent=2),
         callback_args=json.dumps(session.get("oauth2_callback_args"), indent=2),
         oauth2_code_verifier=session.get("oauth2_code_verifier"),
@@ -128,21 +130,20 @@ def twitter_auth_callback():
     認可が正常に完了した場合はアクセストークンが取得できるので、トークンを利用して認可されたユーザーの情報を取得する
     """
     session["oauth2_callback_args"] = request.args
-    # エラーがあった場合はクエリパラメータに error がセットされる
-    error = request.args.get("error")
-    if error:
-        return redirect(url_for("oauth2_0.index"))
-
-    code = request.args.get("code")
 
     # アクセストークンを取得する
     oauth2_session = create_oauth2_session(session["oauth2_state"])
-    oauth2_access_token = oauth2_session.fetch_token(
-        token_url="https://api.twitter.com/2/oauth2/token",
-        client_secret=TWITTER_OAUTH2_CLIENT_SECRET,
-        code_verifier=session["oauth2_code_verifier"],
-        code=code,
-    )
+    try:
+        oauth2_access_token = oauth2_session.fetch_token(
+            token_url="https://api.twitter.com/2/oauth2/token",
+            client_secret=TWITTER_OAUTH2_CLIENT_SECRET,
+            code_verifier=session["oauth2_code_verifier"],
+            authorization_response=request.url,
+        )
+    except OAuth2Error as e:
+        current_app.logger.exception(e)
+        session["oauth2_error"] = f"{type(e)} {e.error} {e.description}"
+        return redirect(url_for("oauth2_0.index"))
 
     # 認可されたユーザー情報を取得する
     authorized_user_response = get_authorized_user(oauth2_access_token)
