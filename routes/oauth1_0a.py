@@ -77,9 +77,7 @@ def index():
         oauth1_access_token=session.get("oauth1_access_token"),
         oauth1_access_token_secret=session.get("oauth1_access_token_secret"),
         callback_args=json.dumps(session.get("oauth1_callback_args"), indent=2),
-        authorized_user=json.dumps(
-            authorized_user_response.get("body"), indent=2, ensure_ascii=False
-        ),
+        authorized_user=json.dumps(authorized_user_response.get("body"), indent=2, ensure_ascii=False),
         response_status=authorized_user_response.get("status_code"),
         response_header=authorized_user_response.get("headers"),
     )
@@ -95,9 +93,7 @@ def twitter_auth():
     oauth1_user_handler = create_oauth1_user_handler()
     authorization_url = oauth1_user_handler.get_authorization_url()
     session["oauth1_oauth_token"] = oauth1_user_handler.request_token["oauth_token"]
-    session["oauth1_oauth_token_secret"] = oauth1_user_handler.request_token[
-        "oauth_token_secret"
-    ]
+    session["oauth1_oauth_token_secret"] = oauth1_user_handler.request_token["oauth_token_secret"]
     return redirect(authorization_url)
 
 
@@ -119,9 +115,7 @@ def twitter_auth_callback():
         "oauth_token": session["oauth1_oauth_token"],
         "oauth_token_secret": session["oauth1_oauth_token_secret"],
     }
-    access_token, access_token_secret = oauth1_user_handler.get_access_token(
-        oauth_verifier
-    )
+    access_token, access_token_secret = oauth1_user_handler.get_access_token(oauth_verifier)
 
     # 認可されたユーザーの情報を取得する
     authorized_user_response = get_authorized_user(access_token, access_token_secret)
