@@ -1,9 +1,5 @@
-import base64
-import hashlib
 import json
 import os
-import random
-import string
 
 import requests
 from flask import Blueprint, render_template, redirect, session, request, url_for
@@ -16,34 +12,36 @@ TWITTER_OAUTH2_CLIENT_ID = os.getenv("TWITTER_OAUTH2_CLIENT_ID")
 TWITTER_OAUTH2_CLIENT_SECRET = os.getenv("TWITTER_OAUTH2_CLIENT_SECRET")
 
 
-def generate_pkce_code() -> tuple[str, str]:
-    """
-    Oauth2 PKCE 認証で使う code_verifier,  code_challenge を生成する
-    NOTE: こちらを参考に実装
-    https://www.camiloterevinto.com/post/oauth-pkce-flow-from-python-desktop
-    """
-    rand = random.SystemRandom()
-    code_verifier = "".join(rand.choices(string.ascii_letters + string.digits, k=128))
-
-    code_sha_256 = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-    b64 = base64.urlsafe_b64encode(code_sha_256)
-    code_challenge = b64.decode("utf-8").replace("=", "")
-
-    return code_verifier, code_challenge
-
-
 def create_oauth2_session(state: str | None = None) -> OAuth2Session:
     """
     requests_oauthlib の OAuth2Session を作成する
-    NOTE: 指定できるスコープの種類はこちらの Scopes の項目を参照
-    https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
+    新規に認可のセッションを開始するときは state=None, コールバックでの検証のためにセッションを復元するときは state が指定される
     """
+    # scope に指定できる権限の種類はこちらの Scopes の項目を参照
+    # https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
     return OAuth2Session(
         TWITTER_OAUTH2_CLIENT_ID,
         redirect_uri="http://127.0.0.1:8000/oauth2_0/twitter_auth/callback",
         scope=["tweet.read", "users.read", "offline.access"],
         state=state,
     )
+
+
+def generate_oauth2_pkce_params(oauth2_session: OAuth2Session) -> tuple[str, str, str]:
+    """
+    OAuth 2.0 with PKCE のためのパラメータを生成する
+    """
+    # OAuth2Session が保持している oauthlib.oauth2.Client が PKCE のパラメータ生成のメソッドを実装しているため _client に直接アクセス
+    code_verifier = oauth2_session._client.create_code_verifier(128)
+    code_challenge = oauth2_session._client.create_code_challenge(code_verifier, "S256")
+
+    # 認可 URL を生成する
+    authorization_url, state = oauth2_session.authorization_url(
+        "https://twitter.com/i/oauth2/authorize",
+        code_challenge=code_challenge,
+        code_challenge_method="S256",
+    )
+    return authorization_url, code_verifier, state
 
 
 def get_authorized_user(access_token: dict) -> dict:
@@ -101,9 +99,7 @@ def index():
         callback_args=json.dumps(session.get("oauth2_callback_args"), indent=2),
         oauth2_code_verifier=session.get("oauth2_code_verifier"),
         oauth2_state=session.get("oauth2_state"),
-        authorized_user=json.dumps(
-            authorized_user_response.get("body"), indent=2, ensure_ascii=False
-        ),
+        authorized_user=json.dumps(authorized_user_response.get("body"), indent=2, ensure_ascii=False),
         response_status=authorized_user_response.get("status_code"),
         response_header=authorized_user_response.get("headers"),
     )
@@ -114,16 +110,12 @@ def twitter_auth():
     """
     twitter の認可の URL を取得してリダイレクトする
     """
+    # 過去のセッションデータが残らないように削除する
     session.clear()
 
-    oauth2_session = create_oauth2_session()
-    code_verifier, code_challenge = generate_pkce_code()
-    authorization_url, state = oauth2_session.authorization_url(
-        "https://twitter.com/i/oauth2/authorize",
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
-    )
+    authorization_url, code_verifier, state = generate_oauth2_pkce_params(create_oauth2_session())
 
+    # コールバックで利用するために code_verifier, state をセッションに保存する
     session["oauth2_code_verifier"] = code_verifier
     session["oauth2_state"] = state
     return redirect(authorization_url)
@@ -142,6 +134,8 @@ def twitter_auth_callback():
         return redirect(url_for("oauth2_0.index"))
 
     code = request.args.get("code")
+
+    # アクセストークンを取得する
     oauth2_session = create_oauth2_session(session["oauth2_state"])
     oauth2_access_token = oauth2_session.fetch_token(
         token_url="https://api.twitter.com/2/oauth2/token",
@@ -153,7 +147,7 @@ def twitter_auth_callback():
     # 認可されたユーザー情報を取得する
     authorized_user_response = get_authorized_user(oauth2_access_token)
 
-    # 簡易的にセッションにデータを保持するために dict に変換する
+    # 画面表示のためにデータをセッションに保存
     session["oauth2_access_token"] = oauth2_access_token
     session["oauth2_authorized_user_response"] = authorized_user_response
     return redirect(url_for("oauth2_0.index"))
