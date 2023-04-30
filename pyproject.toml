@@ -15,6 +15,9 @@ orjson = "^3.8.11"
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 
+[tool.black]
+line-length = 140
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
