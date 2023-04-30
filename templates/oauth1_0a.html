@@ -27,6 +27,11 @@
 
 
 <h2>Oauth1.0a authorization</h2>
+{% if oauth1_error %}
+  <h3>Error</h3>
+  <pre>{{ oauth1_error }}</pre>
+{% endif %}
+
 <h3>Access token</h3>
 {% if oauth1_access_token %}
 <h4>access token</h4>

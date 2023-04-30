@@ -3,8 +3,9 @@ import os
 
 import requests
 import tweepy
-from flask import Blueprint, render_template, redirect, session, request, url_for
+from flask import Blueprint, render_template, redirect, session, request, url_for, current_app
 from requests_oauthlib import OAuth1
+from tweepy import TweepyException
 
 oauth1_0a_blueprint = Blueprint("oauth1_0a", __name__, template_folder="templates")
 
@@ -80,6 +81,7 @@ def index():
         authorized_user=json.dumps(authorized_user_response.get("body"), indent=2, ensure_ascii=False),
         response_status=authorized_user_response.get("status_code"),
         response_header=authorized_user_response.get("headers"),
+        oauth1_error=session.get("oauth1_error"),
     )
 
 
@@ -104,18 +106,18 @@ def twitter_auth_callback():
     認可が正常に完了した場合はアクセストークンが取得できるので、トークンを利用して認可されたユーザーの情報を取得する
     """
     session["oauth1_callback_args"] = request.args
-    oauth_verifier = request.args.get("oauth_verifier")
-
-    # 認可の処理でエラーがあった場合はコールバックのパラメータに oauth_verifier が含まれない
-    if not oauth_verifier:
-        return redirect(url_for("oauth1_0a.index"))
 
     oauth1_user_handler = create_oauth1_user_handler()
     oauth1_user_handler.request_token = {
         "oauth_token": session["oauth1_oauth_token"],
         "oauth_token_secret": session["oauth1_oauth_token_secret"],
     }
-    access_token, access_token_secret = oauth1_user_handler.get_access_token(oauth_verifier)
+    try:
+        access_token, access_token_secret = oauth1_user_handler.get_access_token(request.args.get("oauth_verifier"))
+    except TweepyException as e:
+        current_app.logger.exception(e)
+        session["oauth1_error"] = f"{type(e)} {e}"
+        return redirect(url_for("oauth1_0a.index"))
 
     # 認可されたユーザーの情報を取得する
     authorized_user_response = get_authorized_user(access_token, access_token_secret)
