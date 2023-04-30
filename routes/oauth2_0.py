@@ -96,7 +96,6 @@ def index():
 
     return render_template(
         "oauth2_0.html",
-        oauth2_error=session.get("oauth2_error"),
         oauth2_access_token=json.dumps(session.get("oauth2_access_token"), indent=2),
         callback_args=json.dumps(session.get("oauth2_callback_args"), indent=2),
         oauth2_code_verifier=session.get("oauth2_code_verifier"),
@@ -104,6 +103,7 @@ def index():
         authorized_user=json.dumps(authorized_user_response.get("body"), indent=2, ensure_ascii=False),
         response_status=authorized_user_response.get("status_code"),
         response_header=authorized_user_response.get("headers"),
+        oauth2_error=session.get("oauth2_error"),
     )
 
 
