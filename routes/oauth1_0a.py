@@ -2,10 +2,9 @@ import json
 import os
 
 import requests
-import tweepy
+from authlib.integrations.base_client import OAuthError
+from authlib.integrations.requests_client import OAuth1Session, OAuth1Auth
 from flask import Blueprint, render_template, redirect, session, request, url_for, current_app
-from requests_oauthlib import OAuth1
-from tweepy import TweepyException
 
 oauth1_0a_blueprint = Blueprint("oauth1_0a", __name__, template_folder="templates")
 
@@ -18,7 +17,7 @@ def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     """
     twitter API v2 を利用して token に紐づく twitter アカウントの情報を取得する
     """
-    oauth1 = OAuth1(
+    oauth1 = OAuth1Auth(
         TWITTER_CONSUMER_KEYS_API_KEY,
         TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
         access_token,
@@ -56,14 +55,6 @@ def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     }
 
 
-def create_oauth1_user_handler() -> tweepy.OAuth1UserHandler:
-    return tweepy.OAuth1UserHandler(
-        consumer_key=TWITTER_CONSUMER_KEYS_API_KEY,
-        consumer_secret=TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
-        callback="http://localhost:8000/oauth1_0a/twitter_auth/callback",
-    )
-
-
 @oauth1_0a_blueprint.route("/")
 def index():
     """
@@ -92,10 +83,18 @@ def twitter_auth():
     """
     session.clear()
 
-    oauth1_user_handler = create_oauth1_user_handler()
-    authorization_url = oauth1_user_handler.get_authorization_url()
-    session["oauth1_oauth_token"] = oauth1_user_handler.request_token["oauth_token"]
-    session["oauth1_oauth_token_secret"] = oauth1_user_handler.request_token["oauth_token_secret"]
+    oauth1_session = OAuth1Session(
+        TWITTER_CONSUMER_KEYS_API_KEY,
+        TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
+        redirect_uri="http://localhost:8000/oauth1_0a/twitter_auth/callback",
+    )
+
+    request_token = oauth1_session.fetch_request_token("https://api.twitter.com/oauth/request_token")
+    authorization_url = oauth1_session.create_authorization_url("https://api.twitter.com/oauth/authorize", request_token["oauth_token"])
+
+    session["oauth1_oauth_token"] = request_token["oauth_token"]
+    session["oauth1_oauth_token_secret"] = request_token["oauth_token_secret"]
+
     return redirect(authorization_url)
 
 
@@ -107,22 +106,25 @@ def twitter_auth_callback():
     """
     session["oauth1_callback_args"] = request.args
 
-    oauth1_user_handler = create_oauth1_user_handler()
-    oauth1_user_handler.request_token = {
-        "oauth_token": session["oauth1_oauth_token"],
-        "oauth_token_secret": session["oauth1_oauth_token_secret"],
-    }
+    oauth1_session = OAuth1Session(
+        TWITTER_CONSUMER_KEYS_API_KEY,
+        TWITTER_CONSUMER_KEYS_API_KEY_SECRET,
+        token=session["oauth1_oauth_token"],
+        oauth_token_secret=session["oauth1_oauth_token_secret"],
+    )
+
     try:
-        access_token, access_token_secret = oauth1_user_handler.get_access_token(request.args.get("oauth_verifier"))
-    except TweepyException as e:
+        oauth1_session.parse_authorization_response(request.url)
+        token = oauth1_session.fetch_access_token("https://api.twitter.com/oauth/access_token")
+    except OAuthError as e:
         current_app.logger.exception(e)
         session["oauth1_error"] = f"{type(e)} {e}"
         return redirect(url_for("oauth1_0a.index"))
 
     # 認可されたユーザーの情報を取得する
-    authorized_user_response = get_authorized_user(access_token, access_token_secret)
+    authorized_user_response = get_authorized_user(token["oauth_token"], token["oauth_token_secret"])
 
-    session["oauth1_access_token"] = access_token
-    session["oauth1_access_token_secret"] = access_token_secret
+    session["oauth1_access_token"] = token
+    # session["oauth1_access_token_secret"] = access_token_secret
     session["oauth1_authorized_user_response"] = authorized_user_response
     return redirect(url_for("oauth1_0a.index"))
