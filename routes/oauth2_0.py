@@ -2,9 +2,10 @@ import json
 import os
 
 import requests
+from authlib.common.security import generate_token
+from authlib.integrations.base_client import OAuthError
+from authlib.integrations.requests_client import OAuth2Session, OAuth2Auth
 from flask import Blueprint, render_template, redirect, session, request, url_for, current_app
-from oauthlib.oauth2 import OAuth2Error
-from requests_oauthlib import OAuth2, OAuth2Session
 
 oauth2_0_blueprint = Blueprint("oauth2_0", __name__, template_folder="templates")
 
@@ -22,39 +23,19 @@ def create_oauth2_session(state: str | None = None) -> OAuth2Session:
     # https://developer.twitter.com/en/docs/authentication/oauth-2-0/authorization-code
     return OAuth2Session(
         TWITTER_OAUTH2_CLIENT_ID,
+        TWITTER_OAUTH2_CLIENT_SECRET,
         redirect_uri="http://localhost:8000/oauth2_0/twitter_auth/callback",
         scope=["tweet.read", "users.read", "offline.access"],
+        code_challenge_method="S256",
         state=state,
     )
-
-
-def generate_oauth2_pkce_params(oauth2_session: OAuth2Session) -> tuple[str, str, str]:
-    """
-    OAuth 2.0 with PKCE のためのパラメータを生成する
-    """
-    # OAuth2Session が保持している oauthlib.oauth2.Client が PKCE のパラメータ生成のメソッドを実装しているため _client に直接アクセス
-    code_verifier = oauth2_session._client.create_code_verifier(128)
-    code_challenge = oauth2_session._client.create_code_challenge(code_verifier, "S256")
-
-    # 認可 URL を生成する
-    authorization_url, state = oauth2_session.authorization_url(
-        "https://twitter.com/i/oauth2/authorize",
-        code_challenge=code_challenge,
-        code_challenge_method="S256",
-    )
-    return authorization_url, code_verifier, state
 
 
 def get_authorized_user(access_token: dict) -> dict:
     """
     twitter API v2 を利用して token に紐づく twitter アカウントの情報を取得する
     """
-    oauth2 = OAuth2(
-        token={
-            "access_token": access_token["access_token"],
-            "token_type": access_token["token_type"],
-        }
-    )
+    oauth2 = OAuth2Auth(token=access_token)
     res = requests.get(
         "https://api.twitter.com/2/users/me",
         auth=oauth2,
@@ -115,7 +96,12 @@ def twitter_auth():
     # 過去のセッションデータが残らないように削除する
     session.clear()
 
-    authorization_url, code_verifier, state = generate_oauth2_pkce_params(create_oauth2_session())
+    oauth2_session = create_oauth2_session()
+    code_verifier = generate_token(128)
+    authorization_url, state = oauth2_session.create_authorization_url(
+        "https://twitter.com/i/oauth2/authorize",
+        code_verifier=code_verifier,
+    )
 
     # コールバックで利用するために code_verifier, state をセッションに保存する
     session["oauth2_code_verifier"] = code_verifier
@@ -135,12 +121,11 @@ def twitter_auth_callback():
     oauth2_session = create_oauth2_session(session["oauth2_state"])
     try:
         oauth2_access_token = oauth2_session.fetch_token(
-            token_url="https://api.twitter.com/2/oauth2/token",
-            client_secret=TWITTER_OAUTH2_CLIENT_SECRET,
-            code_verifier=session["oauth2_code_verifier"],
+            "https://api.twitter.com/2/oauth2/token",
             authorization_response=request.url,
+            code_verifier=session["oauth2_code_verifier"],
         )
-    except OAuth2Error as e:
+    except OAuthError as e:
         current_app.logger.exception(e)
         session["oauth2_error"] = f"{type(e)} {e.error} {e.description}"
         return redirect(url_for("oauth2_0.index"))
