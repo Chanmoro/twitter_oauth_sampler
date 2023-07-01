@@ -15,7 +15,7 @@ TWITTER_CONSUMER_KEYS_API_KEY_SECRET = os.getenv("TWITTER_CONSUMER_KEYS_API_KEY_
 
 def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
     """
-    twitter API v2 を利用して token に紐づく twitter アカウントの情報を取得する
+    Retrieve Twitter account data associated with the token using Twitter API v2.
     """
     oauth1 = OAuth1Auth(
         TWITTER_CONSUMER_KEYS_API_KEY,
@@ -58,7 +58,7 @@ def get_authorized_user(access_token: str, access_token_secret: str) -> dict:
 @oauth1_0a_blueprint.route("/")
 def index():
     """
-    認可されたユーザー情報、アクセストークンの情報がセッションにある場合は内容を表示する
+    Display the data stored in the session.
     """
     authorized_user_response = session.get("oauth1_authorized_user_response", {})
 
@@ -79,7 +79,7 @@ def index():
 @oauth1_0a_blueprint.route("/twitter_auth")
 def twitter_auth():
     """
-    twitter の認可の URL を取得してリダイレクトする
+    Obtain the authorization URL for Twitter and redirect to it.
     """
     session.clear()
 
@@ -101,8 +101,8 @@ def twitter_auth():
 @oauth1_0a_blueprint.route("/twitter_auth/callback")
 def twitter_auth_callback():
     """
-    oauth のコールバックを処理する
-    認可が正常に完了した場合はアクセストークンが取得できるので、トークンを利用して認可されたユーザーの情報を取得する
+    Process the callback from Twitter.
+    If authorization is successful, retrieve the authorized user's information.
     """
     session["oauth1_callback_args"] = request.args
 
@@ -121,7 +121,7 @@ def twitter_auth_callback():
         session["oauth1_error"] = f"{type(e)} {e}"
         return redirect(url_for("oauth1_0a.index"))
 
-    # 認可されたユーザーの情報を取得する
+    # Retrieve the authorized user's information.
     authorized_user_response = get_authorized_user(token["oauth_token"], token["oauth_token_secret"])
 
     session["oauth1_access_token"] = token
