@@ -67,7 +67,6 @@ def index():
         oauth1_oauth_token=session.get("oauth1_oauth_token"),
         oauth1_oauth_token_secret=session.get("oauth1_oauth_token_secret"),
         oauth1_access_token=session.get("oauth1_access_token"),
-        oauth1_access_token_secret=session.get("oauth1_access_token_secret"),
         callback_args=json.dumps(session.get("oauth1_callback_args"), indent=2),
         authorized_user=json.dumps(authorized_user_response.get("body"), indent=2, ensure_ascii=False),
         response_status=authorized_user_response.get("status_code"),
@@ -125,6 +124,5 @@ def twitter_auth_callback():
     authorized_user_response = get_authorized_user(token["oauth_token"], token["oauth_token_secret"])
 
     session["oauth1_access_token"] = token
-    # session["oauth1_access_token_secret"] = access_token_secret
     session["oauth1_authorized_user_response"] = authorized_user_response
     return redirect(url_for("oauth1_0a.index"))
