@@ -12,6 +12,6 @@ services:
       TWITTER_OAUTH2_CLIENT_SECRET: ${TWITTER_OAUTH2_CLIENT_SECRET}
       TWITTER_CONSUMER_KEYS_API_KEY: ${TWITTER_CONSUMER_KEYS_API_KEY}
       TWITTER_CONSUMER_KEYS_API_KEY_SECRET: ${TWITTER_CONSUMER_KEYS_API_KEY_SECRET}
-      # oauth のコールバック URL が http でもエラーにならないようにするためにローカル環境でのみ指定
+      # Specify only in local environment to ensure that oauth callback URL does not error even with http.
       OAUTHLIB_INSECURE_TRANSPORT: True
     command: poetry run flask --app main.py --debug run --host=0.0.0.0 --port 8000
