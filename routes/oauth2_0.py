@@ -5,6 +5,7 @@ import requests
 from authlib.common.security import generate_token
 from authlib.integrations.base_client import OAuthError
 from authlib.integrations.requests_client import OAuth2Session, OAuth2Auth
+from authlib.oauth2.rfc7636 import create_s256_code_challenge
 from flask import Blueprint, render_template, redirect, session, request, url_for, current_app
 
 oauth2_0_blueprint = Blueprint("oauth2_0", __name__, template_folder="templates")
@@ -26,7 +27,6 @@ def create_oauth2_session(state: str | None = None) -> OAuth2Session:
         TWITTER_OAUTH2_CLIENT_SECRET,
         redirect_uri="http://localhost:8000/oauth2_0/twitter_auth/callback",
         scope=["tweet.read", "users.read", "offline.access"],
-        code_challenge_method="S256",
         state=state,
     )
 
@@ -97,10 +97,14 @@ def twitter_auth():
     session.clear()
 
     oauth2_session = create_oauth2_session()
+
+    # PKCE に利用する code_verifier, code_challenge を生成する
+    # NOTE: https://docs.authlib.org/en/latest/specs/rfc7636.html#specs-rfc7636
     code_verifier = generate_token(128)
+    code_challenge = create_s256_code_challenge(code_verifier)
+
     authorization_url, state = oauth2_session.create_authorization_url(
-        "https://twitter.com/i/oauth2/authorize",
-        code_verifier=code_verifier,
+        "https://twitter.com/i/oauth2/authorize", code_challenge=code_challenge, code_challenge_method="S256"
     )
 
     # コールバックで利用するために code_verifier, state をセッションに保存する
